@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -61,11 +62,11 @@ public class Architecture {
 		
 		for (String f : DCLUtil.getFilesFromProject(projectPath)) {
 			DCLDeepDependencyVisitor ddv = DCLUtil.useAST(f, classPathEntries, sourcePathEntries);
-			this.projectClasses.put(ddv.getClassName(), ddv.getDependencies());
+			Collection<Dependency> deps = ddv.getDependencies();
+			//this.filterCommonDependencies(deps);
+			this.projectClasses.put(ddv.getClassName(), deps);
 			this.typeBindings.add(ddv.getITypeBinding());
 		}
-		
-		//this.initializeDependencyConstraints(DCLUtil.getDCLFile(projectPath));
 		
 	}
 
@@ -223,6 +224,43 @@ public class Architecture {
 
 		return list;
 	}
+	
+	private void filterCommonDependencies(Collection<Dependency> dependencies) {
+		try{
+			String typesToDisregard[] = new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double",
+		
+				"java.lang.Boolean", "java.util.Vector", "java.util.Iterator", "java.lang.Class", "java.lang.Character", "java.lang.Byte", "java.lang.Short", "java.lang.Integer", "java.lang.Long",
+				"java.lang.Float", "java.lang.Double", "java.lang.String", "java.lang.Object", "java.lang.Boolean[]", "java.lang.Boolean[][]",
+				"java.lang.Character[]", "java.lang.Character[][]", "java.lang.Byte[]", "java.lang.Byte[][]", "java.lang.Short[]", 
+				"java.lang.Short[][]", "java.lang.Integer[]", "java.lang.Integer[][]", "java.lang.Long[]", "java.lang.Long[][]",  
+				"java.lang.Float[]", "java.lang.Float[][]", "java.lang.Double[]", "java.lang.Double[][]", "java.lang.String[]", "java.lang.String[][]",
+				"java.lang.Object[]", "java.lang.Object[][]", "java.lang.Deprecated", "java.util.ArrayList", "java.util.ArrayList[]", "java.util.ArrayList[][]",
+				"java.util.ArrayList<^[a-zA-Z]>", "java.util.ArrayList<^[a-zA-Z]>[]", "java.util.ArrayList<^.*>[][]",
+				"java.util.ArrayList[]<.*>", "java.util.ArrayList[][]<.*>",
+				"java.lang.SuppressWarnings", "java.lang.Override", "java.lang.SafeVarargs", "java.util.ArrayList<SQLData>", "java.util.ArrayList<String>", "java.util.ArrayList<JPanel>", "java.util.ArrayList<Long>", "java.util.ArrayList<Double>", "java.util.ArrayList<Integer>" };
+
+			for (Iterator<Dependency> it = dependencies.iterator(); it.hasNext();) {
+				Dependency d = it.next();
+				if (contains(d.getClassNameA(), typesToDisregard) || contains(d.getClassNameB(), typesToDisregard)) {
+					it.remove();
+				}
+			}
+		}catch(NullPointerException npe){
+			System.out.println("Error in Filtering Common Dependencies");
+		}
+
+	}
+
+	private boolean contains(Object value, Object[] array) {
+		for (Object o : array) {
+			if (o.equals(value) || value.toString().startsWith("java.util.ArrayList")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	
 
 	public List<String> getUniverseOfUsedClasses2(DependencyType dependencyType) {
 		if (dependencyType == null) {
