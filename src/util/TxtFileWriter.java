@@ -2,15 +2,12 @@ package util;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import dependencies.Dependency;
 
 public class TxtFileWriter {
 
-	// Delimiter used in CSV file
 	private static final String COMMA_DELIMITER = ",";
 	private static final String NEW_LINE_SEPARATOR = "\n";
 
@@ -21,13 +18,6 @@ public class TxtFileWriter {
 		try {
 			fileWriter = new FileWriter(projectPath + "/dependencies.txt");
 
-			// Write the CSV file header
-			// fileWriter.append(FILE_HEADER.toString());
-
-			// Add a new line separator after the header
-			// fileWriter.append(NEW_LINE_SEPARATOR);
-
-			// Write a new student object list to the CSV file
 			for (Dependency dep : deps) {
 				fileWriter.append(dep.getClassNameA());
 				fileWriter.append(COMMA_DELIMITER);
@@ -37,7 +27,7 @@ public class TxtFileWriter {
 				fileWriter.append(NEW_LINE_SEPARATOR);
 			}
 
-			// System.out.println("CSV file was created successfully !!!");
+			System.out.println("Dependencies.txt file was created successfully in project root folder!");
 
 		} catch (
 

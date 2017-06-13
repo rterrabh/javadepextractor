@@ -7,28 +7,32 @@ import org.eclipse.core.runtime.CoreException;
 
 import core.Architecture;
 import exception.DCLException;
-import exception.ParseException;
 import util.TxtFileWriter;
 
 public class Main {
 
-	public static void main(String[] args) throws CoreException, ParseException, IOException, DCLException, InterruptedException {
+	public static void main(String[] args) throws CoreException, IOException, DCLException, InterruptedException {
 		String root = args[0];
 		File filePath = new File("").getAbsoluteFile();
 		String path = filePath.getAbsolutePath();
 		String projectPath = "";
 		
-		File f = new File(path+"/"+root);
+		File f = new File(root);
 		
 		if(!f.exists()){
-			File f2 = new File(root);
+			File f2 = new File(path+"/"+root);
 			if(!f2.exists()){
-				System.out.println("Wrong Specified Path!");
+				File f3 = new File(path);
+				if(!f3.exists()){
+					System.out.println("Wrong Specified Path!");
+				}else{
+					projectPath = path;
+				}
 			}else{
-				projectPath = root;
+				projectPath = path+"/"+root;
 			}
 		}else{
-			projectPath = path+"/"+root;
+			projectPath = root;
 		}
 		
 		if(!projectPath.equals("")){

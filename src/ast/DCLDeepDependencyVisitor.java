@@ -29,6 +29,7 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
@@ -41,6 +42,7 @@ import dependencies.AnnotateMethodDependency;
 import dependencies.AnnotateVariableDependency;
 import dependencies.CreateFieldDependency;
 import dependencies.CreateMethodDependency;
+import dependencies.DeclareDependency;
 import dependencies.DeclareFieldDependency;
 import dependencies.DeclareLocalVariableDependency;
 import dependencies.DeclareParameterDependency;
@@ -92,6 +94,7 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 																					// v�rias
 																					// vezes
 			try {
+				@SuppressWarnings("unchecked")
 				List<AbstractTypeDeclaration> types = cUnit.types();				
 				TypeDeclaration typeDeclaration  = (TypeDeclaration) types.get(0);
 				ITypeBinding typeBind = typeDeclaration.resolveBinding();
@@ -205,7 +208,6 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 			this.dependencies.add(new AnnotateClassDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
 					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		} else if (node.getParent().getNodeType() == ASTNode.VARIABLE_DECLARATION_STATEMENT) {
-/*tirar duvida sobre como testar*/
 			VariableDeclarationStatement st = (VariableDeclarationStatement) node.getParent();
 			VariableDeclarationFragment vdf = ((VariableDeclarationFragment) st.fragments().get(0));
 			ASTNode relevantParent = this.getRelevantParent(node);
@@ -324,7 +326,6 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 						.resolveBinding()), cUnit.getLineNumber(node.getReturnType2().getStartPosition()), node.getReturnType2()
 						.getStartPosition(), node.getReturnType2().getLength(), node.getName().getIdentifier()));
 			} else {
-/*tirar duvida de quando entraria*/
 				if (node.getReturnType2().resolveBinding().getTypeBounds().length >= 1) {
 					this.dependencies.add(new DeclareReturnDependency(this.className, this.getTargetClassName(node.getReturnType2()
 							.resolveBinding().getTypeBounds()[0]), cUnit.getLineNumber(node.getReturnType2().getStartPosition()), node
@@ -358,6 +359,14 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 			break;
 		}
 
+		return true;
+	}
+	
+	@Override
+	public boolean visit(VariableDeclarationExpression node) {
+		this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(node.getType()
+				.resolveBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getType().getStartPosition(), node.getType()
+				.getLength()));
 		return true;
 	}
 
