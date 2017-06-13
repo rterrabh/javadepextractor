@@ -75,10 +75,13 @@ public class Architecture {
 		return projectClasses.get(className);
 	}
 
-	public Collection<Dependency> getDependencies() {
-		Collection<Dependency> listDep = new HashSet<Dependency>();
+	public Collection<String> getDependencies() {
+		Collection<String> listDep = new HashSet<String>();
 		for (Map.Entry<String, Collection<Dependency>> entryDep : projectClasses.entrySet()) {
-			listDep.addAll(entryDep.getValue());
+			for (Dependency dep : entryDep.getValue()) {
+				String s = dep.getClassNameA() + "," + dep.getDependencyType().getValue() + "," + dep.getClassNameB();
+				listDep.add(s);
+			}
 		}
 		return listDep;
 	}

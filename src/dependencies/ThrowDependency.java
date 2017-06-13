@@ -1,9 +1,6 @@
 package dependencies;
 
-import java.util.Properties;
-
 import enums.DependencyType;
-import enums.ViolationProperties;
 import util.DCLUtil;
 
 public final class ThrowDependency extends Dependency {
@@ -33,13 +30,6 @@ public final class ThrowDependency extends Dependency {
 	@Override
 	public DependencyType getDependencyType() {
 		return DependencyType.THROW;
-	}
-	
-	@Override
-	public Properties props() {
-		Properties props = super.props();
-		props.put(ViolationProperties.METHOD_NAME_A.getKey(), this.methodNameA);
-		return props;
 	}
 		
 }
