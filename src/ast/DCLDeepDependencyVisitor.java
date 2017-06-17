@@ -49,21 +49,21 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 	private CompilationUnit cUnit;
 	private String className;
 
-	public DCLDeepDependencyVisitor(String f, String[] classPathEntries, String[] sourcePathEntries) throws DCLException {
-		try{
-			
+	public DCLDeepDependencyVisitor(String f, String[] classPathEntries, String[] sourcePathEntries)
+			throws DCLException {
+		try {
+
 			this.dependencies = new ArrayList<Dependency>();
-		    
-		    this.cUnit = DCLUtil.getCompilationUnitFromAST(f, classPathEntries, sourcePathEntries);
-		    this.className = DCLUtil.getClassName(this.cUnit,f);
-		    
+
+			this.cUnit = DCLUtil.getCompilationUnitFromAST(f, classPathEntries, sourcePathEntries);
+			this.className = DCLUtil.getClassName(this.cUnit, f);
+
 			this.cUnit.accept(this);
-		    
-		} catch(Exception e){
-			throw new DCLException(e,this.cUnit);
+
+		} catch (Exception e) {
+			throw new DCLException(e, this.cUnit);
 		}
 	}
-	
 
 	public final List<Dependency> getDependencies() {
 		return this.dependencies;
@@ -82,20 +82,20 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 																					// vezes
 			try {
 				@SuppressWarnings("unchecked")
-				List<AbstractTypeDeclaration> types = cUnit.types();				
-				TypeDeclaration typeDeclaration  = (TypeDeclaration) types.get(0);
+				List<AbstractTypeDeclaration> types = cUnit.types();
+				TypeDeclaration typeDeclaration = (TypeDeclaration) types.get(0);
 				ITypeBinding typeBind = typeDeclaration.resolveBinding();
-				
+
 				this.typeBinding = typeBind;
-				
+
 				Set<ITypeBinding> superTypeBind = new HashSet<ITypeBinding>();
 				Set<ITypeBinding> interfaceBinds = new HashSet<ITypeBinding>();
-				
+
 				ITypeBinding superclass = typeBind.getSuperclass();
-				
-				//TODO: TESTAR INTERFACES INDIRETAS
-				
-				while(superclass!=null){ 
+
+				// TODO: TESTAR INTERFACES INDIRETAS
+
+				while (superclass != null) {
 					superTypeBind.add(superclass);
 					ITypeBinding[] indirectInterfaceBinds = superclass.getInterfaces();
 					interfaceBinds.addAll(Arrays.asList(indirectInterfaceBinds));
@@ -103,36 +103,36 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 				}
 
 				for (ITypeBinding t : superTypeBind) {
-					if (node.getSuperclassType() != null
-							&& t.getQualifiedName().equals(node.getSuperclassType().resolveBinding().getQualifiedName())) {
-						this.dependencies.add(new ExtendDependency(this.className, t.getQualifiedName(), cUnit
-								.getLineNumber(node.getSuperclassType().getStartPosition()), node.getSuperclassType().getStartPosition(),
-								node.getSuperclassType().getLength()));
+					if (node.getSuperclassType() != null && t.getQualifiedName()
+							.equals(node.getSuperclassType().resolveBinding().getQualifiedName())) {
+						this.dependencies.add(new ExtendDependency(this.className, t.getQualifiedName(),
+								cUnit.getLineNumber(node.getSuperclassType().getStartPosition()),
+								node.getSuperclassType().getStartPosition(), node.getSuperclassType().getLength()));
 					} else {
-						//this.dependencies.add(new ExtendIndirectDependency(this.className, t.getQualifiedName(), null, null, null));
+						// this.dependencies.add(new
+						// ExtendIndirectDependency(this.className,
+						// t.getQualifiedName(), null, null, null));
 					}
 				}
 
-				//List<ITypeBinding> superInterfaceBind = new ArrayList<ITypeBinding>();
+				// List<ITypeBinding> superInterfaceBind = new
+				// ArrayList<ITypeBinding>();
 				ITypeBinding[] directInterfaceBinds = typeBind.getInterfaces();
-				
+
 				interfaceBinds.addAll(Arrays.asList(directInterfaceBinds));
-				
-				/*while(directInterfaceBinds.length!=0){
-					
-					for (ITypeBinding di : directInterfaceBinds){
-						interfaceBinds.add(di);
-					}
-					
-					for (ITypeBinding dii : interfaceBinds){
-						directInterfaceBinds = dii.getInterfaces();
-					}
-				}*/
 
-				
-				//ITypeBinding[] interfaceBinds = typeBind.getInterfaces();
+				/*
+				 * while(directInterfaceBinds.length!=0){
+				 * 
+				 * for (ITypeBinding di : directInterfaceBinds){
+				 * interfaceBinds.add(di); }
+				 * 
+				 * for (ITypeBinding dii : interfaceBinds){ directInterfaceBinds
+				 * = dii.getInterfaces(); } }
+				 */
 
-				
+				// ITypeBinding[] interfaceBinds = typeBind.getInterfaces();
+
 				externo: for (ITypeBinding t : interfaceBinds) {
 					for (Object it : node.superInterfaceTypes()) {
 						switch (((Type) it).getNodeType()) {
@@ -141,66 +141,78 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 							if (t.getQualifiedName().equals(st.getName().resolveTypeBinding().getQualifiedName())) {
 								if (!typeDeclaration.isInterface()) {
 									this.dependencies.add(new ImplementDependency(this.className, t.getQualifiedName(),
-											cUnit.getLineNumber(st.getStartPosition()), st.getStartPosition(), st.getLength()));
+											cUnit.getLineNumber(st.getStartPosition()), st.getStartPosition(),
+											st.getLength()));
 								} else {
-									this.dependencies.add(new ExtendDependency(this.className, t.getQualifiedName(), cUnit
-											.getLineNumber(st.getStartPosition()), st.getStartPosition(), st.getLength()));
+									this.dependencies.add(new ExtendDependency(this.className, t.getQualifiedName(),
+											cUnit.getLineNumber(st.getStartPosition()), st.getStartPosition(),
+											st.getLength()));
 								}
 								continue externo;
 							}
 							break;
 						case ASTNode.PARAMETERIZED_TYPE:
 							ParameterizedType pt = (ParameterizedType) it;
-							if (t!= null && t.getQualifiedName() != null && pt != null && pt.getType() != null && pt.getType().resolveBinding() != null &&
-/*Tirar duvida (no original era BinaryName
- * mas precise mudar para QualifiedName)*/
-									//t.getQualifiedName().equals(pt.getType().resolveBinding().getBinaryName())) {
+							if (t != null && t.getQualifiedName() != null && pt != null && pt.getType() != null
+									&& pt.getType().resolveBinding() != null &&
+									// t.getQualifiedName().equals(pt.getType().resolveBinding().getBinaryName()))
+									// {
 									t.getQualifiedName().equals(pt.getType().resolveBinding().getQualifiedName())) {
 								if (!typeDeclaration.isInterface()) {
 									this.dependencies.add(new ImplementDependency(this.className, t.getQualifiedName(),
-									//this.dependencies.add(new ImplementDependency(this.className, t.getBinaryName(),
-											cUnit.getLineNumber(pt.getStartPosition()), pt.getStartPosition(), pt.getLength()));
+											// this.dependencies.add(new
+											// ImplementDependency(this.className,
+											// t.getBinaryName(),
+											cUnit.getLineNumber(pt.getStartPosition()), pt.getStartPosition(),
+											pt.getLength()));
 								} else {
-/*Tirar duvida de como entraria*/									
-									this.dependencies.add(new ExtendDependency(this.className, t.getBinaryName(), cUnit
-											.getLineNumber(pt.getStartPosition()), pt.getStartPosition(), pt.getLength()));
+									this.dependencies.add(new ExtendDependency(this.className, t.getBinaryName(),
+											cUnit.getLineNumber(pt.getStartPosition()), pt.getStartPosition(),
+											pt.getLength()));
 								}
 								continue externo;
 							}
 							break;
 						}
 					}
-					//this.dependencies.add(new ImplementIndirectDependency(this.className, t.getQualifiedName(), null, null, null));
+					// this.dependencies.add(new
+					// ImplementIndirectDependency(this.className,
+					// t.getQualifiedName(), null, null, null));
 				}
 			} catch (Exception e) {
 				throw new RuntimeException("AST Parser error.", e);
 			}
 		}
 		return true;
-	} 
+	}
 
 	@Override
 	public boolean visit(MarkerAnnotation node) {
 		if (node.getParent().getNodeType() == ASTNode.FIELD_DECLARATION) {
-			this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(
+					new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		} else if (node.getParent().getNodeType() == ASTNode.METHOD_DECLARATION) {
-			this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(
+					new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		} else if (node.getParent().getNodeType() == ASTNode.TYPE_DECLARATION) {
-			this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(
+					new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		} else if (node.getParent().getNodeType() == ASTNode.VARIABLE_DECLARATION_STATEMENT) {
 			ASTNode relevantParent = this.getRelevantParent(node);
 			if (relevantParent.getNodeType() == ASTNode.METHOD_DECLARATION) {
-				this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding()
-						.getQualifiedName(), cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+				this.dependencies.add(new AnnotateDependency(this.className,
+						node.getTypeName().resolveTypeBinding().getQualifiedName(),
+						cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 			}
 		} else if (node.getParent().getNodeType() == ASTNode.SINGLE_VARIABLE_DECLARATION) {
 			ASTNode relevantParent = this.getRelevantParent(node);
 			if (relevantParent.getNodeType() == ASTNode.METHOD_DECLARATION) {
-				this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding()
-						.getQualifiedName(), cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+				this.dependencies.add(new AnnotateDependency(this.className,
+						node.getTypeName().resolveTypeBinding().getQualifiedName(),
+						cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 			}
 
 		}
@@ -210,14 +222,17 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 	@Override
 	public boolean visit(SingleMemberAnnotation node) {
 		if (node.getParent().getNodeType() == ASTNode.FIELD_DECLARATION) {
-			this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(
+					new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		} else if (node.getParent().getNodeType() == ASTNode.METHOD_DECLARATION) {
-			this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(
+					new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		} else if (node.getParent().getNodeType() == ASTNode.TYPE_DECLARATION) {
-			this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(
+					new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		}
 		return true;
 	}
@@ -228,17 +243,19 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 
 		switch (relevantParent.getNodeType()) {
 		case ASTNode.FIELD_DECLARATION:
-			this.dependencies.add(new CreateDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies
+					.add(new CreateDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 			break;
 		case ASTNode.METHOD_DECLARATION:
-			this.dependencies.add(new CreateDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies
+					.add(new CreateDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 			break;
 		case ASTNode.INITIALIZER:
 			this.dependencies
-					.add(new CreateDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()), cUnit
-							.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+					.add(new CreateDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 			break;
 		}
 
@@ -247,8 +264,10 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 
 	@Override
 	public boolean visit(FieldDeclaration node) {
-		this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()),
-				cUnit.getLineNumber(node.getType().getStartPosition()), node.getType().getStartPosition(), node.getType().getLength()));
+		this.dependencies
+				.add(new DeclareDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()),
+						cUnit.getLineNumber(node.getType().getStartPosition()), node.getType().getStartPosition(),
+						node.getType().getLength()));
 		return true;
 	}
 
@@ -257,45 +276,49 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 		for (Object o : node.parameters()) {
 			if (o instanceof SingleVariableDeclaration) {
 				SingleVariableDeclaration svd = (SingleVariableDeclaration) o;
-				this.dependencies.add(new DeclareDependency(this.className, this
-						.getTargetClassName(svd.getType().resolveBinding()), cUnit.getLineNumber(svd.getStartPosition()), svd
-						.getStartPosition(), svd.getLength()));
+				this.dependencies.add(
+						new DeclareDependency(this.className, this.getTargetClassName(svd.getType().resolveBinding()),
+								cUnit.getLineNumber(svd.getStartPosition()), svd.getStartPosition(), svd.getLength()));
 				if (svd.getType().getNodeType() == Type.PARAMETERIZED_TYPE) {
 					// TODO: Adjust the way that we handle parameter types
 					for (Object t : ((ParameterizedType) svd.getType()).typeArguments()) {
 						if (t instanceof SimpleType) {
 							SimpleType st = (SimpleType) t;
-							this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(st
-									.resolveBinding()), cUnit.getLineNumber(st.getStartPosition()), st.getStartPosition(), st
-									.getLength()));
+							this.dependencies.add(new DeclareDependency(this.className,
+									this.getTargetClassName(st.resolveBinding()),
+									cUnit.getLineNumber(st.getStartPosition()), st.getStartPosition(), st.getLength()));
 						} else if (t instanceof ParameterizedType) {
 							ParameterizedType pt = (ParameterizedType) t;
-							this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(pt.getType()
-									.resolveBinding()), cUnit.getLineNumber(pt.getStartPosition()), pt.getStartPosition(), pt
-									.getLength()));
+							this.dependencies.add(new DeclareDependency(this.className,
+									this.getTargetClassName(pt.getType().resolveBinding()),
+									cUnit.getLineNumber(pt.getStartPosition()), pt.getStartPosition(), pt.getLength()));
 						}
 					}
 				}
 
 			}
 		}
-		for (Object o : node.thrownExceptions()) {
+		// for (Object o : node.thrownExceptions()) {
+		for (Object o : node.thrownExceptionTypes()) {
 			Name name = (Name) o;
-			this.dependencies.add(new ThrowDependency(this.className, this.getTargetClassName(name.resolveTypeBinding()), cUnit
-					.getLineNumber(name.getStartPosition()), name.getStartPosition(), name.getLength(), node.getName().getIdentifier()));
+			this.dependencies.add(new ThrowDependency(this.className,
+					this.getTargetClassName(name.resolveTypeBinding()), cUnit.getLineNumber(name.getStartPosition()),
+					name.getStartPosition(), name.getLength(), node.getName().getIdentifier()));
 		}
 
-		if (node.getReturnType2() != null
-				&& !(node.getReturnType2().isPrimitiveType() && ((PrimitiveType) node.getReturnType2()).getPrimitiveTypeCode() == PrimitiveType.VOID)) {
+		if (node.getReturnType2() != null && !(node.getReturnType2().isPrimitiveType()
+				&& ((PrimitiveType) node.getReturnType2()).getPrimitiveTypeCode() == PrimitiveType.VOID)) {
 			if (!node.getReturnType2().resolveBinding().isTypeVariable()) {
-				this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(node.getReturnType2()
-						.resolveBinding()), cUnit.getLineNumber(node.getReturnType2().getStartPosition()), node.getReturnType2()
-						.getStartPosition(), node.getReturnType2().getLength()));
+				this.dependencies.add(new DeclareDependency(this.className,
+						this.getTargetClassName(node.getReturnType2().resolveBinding()),
+						cUnit.getLineNumber(node.getReturnType2().getStartPosition()),
+						node.getReturnType2().getStartPosition(), node.getReturnType2().getLength()));
 			} else {
 				if (node.getReturnType2().resolveBinding().getTypeBounds().length >= 1) {
-					this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(node.getReturnType2()
-							.resolveBinding().getTypeBounds()[0]), cUnit.getLineNumber(node.getReturnType2().getStartPosition()), node
-							.getReturnType2().getStartPosition(), node.getReturnType2().getLength()));
+					this.dependencies.add(new DeclareDependency(this.className,
+							this.getTargetClassName(node.getReturnType2().resolveBinding().getTypeBounds()[0]),
+							cUnit.getLineNumber(node.getReturnType2().getStartPosition()),
+							node.getReturnType2().getStartPosition(), node.getReturnType2().getLength()));
 				}
 			}
 
@@ -310,26 +333,28 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 		switch (relevantParent.getNodeType()) {
 		case ASTNode.METHOD_DECLARATION:
 
-			this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(node.getType()
-					.resolveBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getType().getStartPosition(), node.getType()
-					.getLength()));
+			this.dependencies
+					.add(new DeclareDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()),
+							cUnit.getLineNumber(node.getStartPosition()), node.getType().getStartPosition(),
+							node.getType().getLength()));
 
 			break;
 		case ASTNode.INITIALIZER:
-			this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(node.getType()
-					.resolveBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getType().getStartPosition(), node.getType()
-					.getLength()));
+			this.dependencies
+					.add(new DeclareDependency(this.className, this.getTargetClassName(node.getType().resolveBinding()),
+							cUnit.getLineNumber(node.getStartPosition()), node.getType().getStartPosition(),
+							node.getType().getLength()));
 			break;
 		}
 
 		return true;
 	}
-	
+
 	@Override
 	public boolean visit(VariableDeclarationExpression node) {
-		this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(node.getType()
-				.resolveBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getType().getStartPosition(), node.getType()
-				.getLength()));
+		this.dependencies.add(new DeclareDependency(this.className,
+				this.getTargetClassName(node.getType().resolveBinding()), cUnit.getLineNumber(node.getStartPosition()),
+				node.getType().getStartPosition(), node.getType().getLength()));
 		return true;
 	}
 
@@ -340,16 +365,20 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 		switch (relevantParent.getNodeType()) {
 		case ASTNode.METHOD_DECLARATION:
 			if (node.getExpression() != null) {
-				this.dependencies.add(new AccessDependency(this.className, this.getTargetClassName(node.getExpression()
-						.resolveTypeBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(),
-						node.getLength()));
+				if (node.getExpression().resolveTypeBinding() != null) {
+					this.dependencies.add(new AccessDependency(this.className,
+							this.getTargetClassName(node.getExpression().resolveTypeBinding()),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+				}
 			}
 			break;
 		case ASTNode.INITIALIZER:
 			if (node.getExpression() != null) {
-				this.dependencies.add(new AccessDependency(this.className, this.getTargetClassName(node.getExpression()
-						.resolveTypeBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(),
-						node.getLength()));
+				if (node.getExpression().resolveTypeBinding() != null) {
+					this.dependencies.add(new AccessDependency(this.className,
+							this.getTargetClassName(node.getExpression().resolveTypeBinding()),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+				}
 			}
 			break;
 		}
@@ -362,12 +391,14 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 
 		switch (relevantParent.getNodeType()) {
 		case ASTNode.METHOD_DECLARATION:
-			this.dependencies.add(new AccessDependency(this.className, this.getTargetClassName(node.getExpression()
-					.resolveTypeBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(new AccessDependency(this.className,
+					this.getTargetClassName(node.getExpression().resolveTypeBinding()),
+					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 			break;
-		case ASTNode.INITIALIZER:			
-			this.dependencies.add(new AccessDependency(this.className, this.getTargetClassName(node.getExpression()
-					.resolveTypeBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+		case ASTNode.INITIALIZER:
+			this.dependencies.add(new AccessDependency(this.className,
+					this.getTargetClassName(node.getExpression().resolveTypeBinding()),
+					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 			break;
 		}
 		return true;
@@ -375,21 +406,23 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 
 	@Override
 	public boolean visit(QualifiedName node) {
-		if ((node.getParent().getNodeType() == ASTNode.METHOD_INVOCATION || node.getParent().getNodeType() == ASTNode.INFIX_EXPRESSION
-				|| node.getParent().getNodeType() == ASTNode.VARIABLE_DECLARATION_FRAGMENT || node.getParent().getNodeType() == ASTNode.ASSIGNMENT)
+		if ((node.getParent().getNodeType() == ASTNode.METHOD_INVOCATION
+				|| node.getParent().getNodeType() == ASTNode.INFIX_EXPRESSION
+				|| node.getParent().getNodeType() == ASTNode.VARIABLE_DECLARATION_FRAGMENT
+				|| node.getParent().getNodeType() == ASTNode.ASSIGNMENT)
 				&& node.getQualifier().getNodeType() != ASTNode.QUALIFIED_NAME) {
 			ASTNode relevantParent = getRelevantParent(node);
-			
+
 			switch (relevantParent.getNodeType()) {
 			case ASTNode.METHOD_DECLARATION:
-				this.dependencies.add(new AccessDependency(this.className, this.getTargetClassName(node.getQualifier()
-						.resolveTypeBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(),
-						node.getLength()));
+				this.dependencies.add(new AccessDependency(this.className,
+						this.getTargetClassName(node.getQualifier().resolveTypeBinding()),
+						cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 				break;
 			case ASTNode.INITIALIZER:
-				this.dependencies.add(new AccessDependency(this.className, this.getTargetClassName(node.getQualifier()
-						.resolveTypeBinding()), cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(),
-						node.getLength()));
+				this.dependencies.add(new AccessDependency(this.className,
+						this.getTargetClassName(node.getQualifier().resolveTypeBinding()),
+						cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 				break;
 			}
 
@@ -408,17 +441,20 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 		return super.visit(node);
 	}
 
-	/*tirar duvida de quando entraria*/
+	/* tirar duvida de quando entraria */
 	public boolean visit(org.eclipse.jdt.core.dom.NormalAnnotation node) {
 		if (node.getParent().getNodeType() == ASTNode.FIELD_DECLARATION) {
-			this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(
+					new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		} else if (node.getParent().getNodeType() == ASTNode.METHOD_DECLARATION) {
-			this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(
+					new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		} else if (node.getParent().getNodeType() == ASTNode.TYPE_DECLARATION) {
-			this.dependencies.add(new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
-					cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
+			this.dependencies.add(
+					new AnnotateDependency(this.className, node.getTypeName().resolveTypeBinding().getQualifiedName(),
+							cUnit.getLineNumber(node.getStartPosition()), node.getStartPosition(), node.getLength()));
 		}
 		return true;
 	};
@@ -432,11 +468,13 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 				for (Object o : pt.typeArguments()) {
 					Type t = (Type) o;
 					if (relevantParent.getNodeType() == ASTNode.METHOD_DECLARATION) {
-						this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(t
-								.resolveBinding()), cUnit.getLineNumber(t.getStartPosition()), t.getStartPosition(), t.getLength()));
-					}else{
-						this.dependencies.add(new DeclareDependency(this.className, this.getTargetClassName(t
-								.resolveBinding()), cUnit.getLineNumber(t.getStartPosition()), t.getStartPosition(), t.getLength()));
+						this.dependencies.add(new DeclareDependency(this.className,
+								this.getTargetClassName(t.resolveBinding()), cUnit.getLineNumber(t.getStartPosition()),
+								t.getStartPosition(), t.getLength()));
+					} else {
+						this.dependencies.add(new DeclareDependency(this.className,
+								this.getTargetClassName(t.resolveBinding()), cUnit.getLineNumber(t.getStartPosition()),
+								t.getStartPosition(), t.getLength()));
 					}
 				}
 			}
@@ -479,11 +517,11 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 
 		return result;
 	}
-	
+
 	public CompilationUnit getcUnit() {
 		return cUnit;
 	}
-	
+
 	public ITypeBinding getITypeBinding() {
 		return typeBinding;
 	}

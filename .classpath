@@ -9,10 +9,10 @@
 	<classpathentry kind="lib" path="lib/org.eclipse.core.runtime-3.10.0.v20140318-2214.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.equinox.common-3.6.200.v20130402-1505.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.equinox.preferences-3.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/org.eclipse.jdt.core-3.12.2.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jdt.ui-3.12.2.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jface-3.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.osgi-3.11.2.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.text_3.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jdt.core-3.12.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

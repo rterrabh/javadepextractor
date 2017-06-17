@@ -237,7 +237,7 @@ public final class DCLUtil {
 		String source = readFileToString(f);
 		// Document document = new Document(source);
 
-		ASTParser parser = ASTParser.newParser(AST.JLS4);
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
 
 		@SuppressWarnings("unchecked")
 		Map<String, String> options = JavaCore.getDefaultOptions();
@@ -247,10 +247,10 @@ public final class DCLUtil {
 		parser.setCompilerOptions(options);
 
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		parser.setEnvironment(classPathEntries, sourcePathEntries, encodings, true);
 		parser.setSource(source.toCharArray());
 		parser.setResolveBindings(true);
 
-		parser.setEnvironment(classPathEntries, sourcePathEntries, encodings, true);
 		parser.setUnitName("Dependency-Tool");
 		parser.setBindingsRecovery(true);
 
@@ -304,7 +304,6 @@ public final class DCLUtil {
 		char[] buf = new char[10];
 		int numRead = 0;
 		while ((numRead = reader.read(buf)) != -1) {
-			System.out.println(numRead);
 			String readData = String.valueOf(buf, 0, numRead);
 			fileData.append(readData);
 			buf = new char[1024];
