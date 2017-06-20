@@ -300,7 +300,12 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 		}
 		// for (Object o : node.thrownExceptions()) {
 		for (Object o : node.thrownExceptionTypes()) {
-			Name name = (Name) o;
+			Name name = null;
+			if (Name.class.isInstance(o)) {
+				name = (Name) o;
+			} else if (SimpleType.class.isInstance(o)) {
+				name = ((SimpleType) o).getName();
+			}
 			this.dependencies.add(new ThrowDependency(this.className,
 					this.getTargetClassName(name.resolveTypeBinding()), cUnit.getLineNumber(name.getStartPosition()),
 					name.getStartPosition(), name.getLength(), node.getName().getIdentifier()));
@@ -441,7 +446,6 @@ public class DCLDeepDependencyVisitor extends ASTVisitor {
 		return super.visit(node);
 	}
 
-	/* tirar duvida de quando entraria */
 	public boolean visit(org.eclipse.jdt.core.dom.NormalAnnotation node) {
 		if (node.getParent().getNodeType() == ASTNode.FIELD_DECLARATION) {
 			this.dependencies.add(
