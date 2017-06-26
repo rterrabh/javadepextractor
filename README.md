@@ -13,4 +13,6 @@ It creates the *dependencies.txt* file in which **each** line is as follows:
 For example:
 > com.terra.ClassA , access , java.lang.Math
 
+Important: javadepextractor does not support type inference yet. For example, the dependencies inside a lambda expression that does not specify the type of its elements, will not be extracted. 
+
 PS: The dependency type can be: access, declare, create, extend, implement, useannotation, and throw.
